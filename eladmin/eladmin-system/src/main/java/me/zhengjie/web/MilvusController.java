@@ -20,4 +20,9 @@ public class MilvusController {
 
 
     }
+
+    @GetMapping("/hello")
+    public String hearbeat(){
+        return "hello;";
+    }
 }
