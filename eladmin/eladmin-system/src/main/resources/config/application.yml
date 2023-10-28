@@ -58,4 +58,4 @@ rsa:
 
 milvus:
   host: 10.129.218.54
-  port: 9091
+  port: 19530

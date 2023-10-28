@@ -5,13 +5,13 @@ mybatis-plus:
 
 #配置数据源
 spring:
-  elasticsearch:
-    rest:
-      uris: http://123.249.119.160:9200
-      username: elastic
-      password: 123456
-      connection-timeout: 5000
-      read-timeout: 5000
+#  elasticsearch:
+#    rest:
+#      uris: http://123.249.119.160:9200
+#      username: elastic
+#      password: 123456
+#      connection-timeout: 5000
+#      read-timeout: 5000
   datasource:
     druid:
       db-type: com.alibaba.druid.pool.DruidDataSource
