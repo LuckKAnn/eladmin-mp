@@ -23,4 +23,21 @@ public class SimilarityData {
      * 相似度分数
      */
     private Float score;
+
+    private String fromFile;
+
+    private String compileLevel;
+
+    private String targetArch;
+
+    private String obs;
+
+
+    private Long codeLine;
+
+    private String protectInfo;
+
+    private String faultInfo;
+
+    private String dangerInfo;
 }

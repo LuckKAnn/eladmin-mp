@@ -1,10 +1,16 @@
 package me.zhengjie.modules.system.rest;
 
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.zhengjie.modules.system.FuncCodeInfoDTO;
+import me.zhengjie.modules.system.domain.FilePathDTO;
+import me.zhengjie.modules.system.domain.FunctionDTO;
 import me.zhengjie.modules.system.domain.SimilarityData;
+import me.zhengjie.modules.system.service.ElasticCodeService;
+import me.zhengjie.modules.system.service.MilvusService;
 import me.zhengjie.modules.system.service.ProcessService;
 import me.zhengjie.utils.FileUtil;
 import org.springframework.http.HttpStatus;
@@ -15,8 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Author liukun.inspire
@@ -38,10 +47,13 @@ public class ProcessController {
     final ProcessService processService;
     private final String fileSavePath = "/Users/liukunkun/Desktop/dev/save/";
 
+    final ElasticCodeService elasticCodeService;
+
+    final MilvusService milvusService;
+
     @PostMapping("/upload")
     @ApiOperation("上传文件")
     public ResponseEntity<Object> postProcessFile(@RequestParam MultipartFile file, HttpServletRequest request) throws IOException {
-        Long id = Long.valueOf(request.getParameter("id"));
         String fileName = "";
         if (file != null) {
             fileName = file.getOriginalFilename();
@@ -66,5 +78,51 @@ public class ProcessController {
         return ResponseEntity.ok(similarityData);
     }
 
+    @PostMapping("/funcInfo")
+    public ResponseEntity<List<SimilarityData>> postProcessLlvmByInfo(@RequestBody String functionInfo) {
+
+        FuncCodeInfoDTO funcCodeInfoDTO = JSONObject.parseObject(functionInfo, FuncCodeInfoDTO.class);
+        List<SimilarityData> search = milvusService.search(new byte[10]).getSimilarities();
+        // 现在有一个新的vector是不是应该也要插入到Milvus里面去
+        search.sort(Comparator.comparingDouble(SimilarityData::getScore));
+        return ResponseEntity.ok(search);
+    }
+
+    @PostMapping("/files")
+    public ResponseEntity<Long> uploadFuncAndGetInfo(@RequestBody String body) {
+        List<FilePathDTO> filePathFromPath = processService.getFilePathFromPath(body);
+        JSONObject jsonObject = JSONObject.parseObject(body);
+        Long pathId = jsonObject.getLong("path");
+        return ResponseEntity.ok(pathId);
+    }
+
+    // 写一个获取路径的
+
+    @GetMapping("/path")
+    public ResponseEntity<List<FilePathDTO>> getPath(@RequestParam("path") String path) {
+        List<FilePathDTO> filePathFromPath = processService.getFilePathFromPath(path);
+
+        return ResponseEntity.ok(filePathFromPath);
+    }
+
+
+    @PostMapping("/path")
+    public ResponseEntity<List<FunctionDTO>> processPathFile(@RequestParam("path") String filePath) {
+
+        System.out.println(filePath);
+        File file = new File(filePath);
+
+        List<FunctionDTO> functionDTOS = processService.doProcessFile(file);
+        List<FunctionDTO> result = functionDTOS.stream().map((ft) -> {
+            ft.setFileName(filePath);
+            ft.setComeInfo("Apache");
+            return ft;
+        }).collect(Collectors.toList());
+        // if (!file.exists() || file.isDirectory()) {
+        //     // 不正确
+        //     return ResponseEntity.ok(null);
+        // }
+        return ResponseEntity.ok(result);
+    }
 
 }

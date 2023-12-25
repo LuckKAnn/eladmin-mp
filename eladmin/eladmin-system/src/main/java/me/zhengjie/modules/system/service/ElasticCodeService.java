@@ -13,8 +13,11 @@ import java.util.*;
  */
 public interface ElasticCodeService {
 
+    List<EsCode> getAll(int pageId, int pageSize);
 
-    EsCode getFunctionById(Long id);
+    EsCode getFunctionById(String id);
 
     List<EsCode> getFunctionByName(String functionName);
+
+    Long getCount();
 }

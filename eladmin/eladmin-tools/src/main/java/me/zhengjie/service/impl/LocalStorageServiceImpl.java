@@ -28,19 +28,22 @@ import me.zhengjie.utils.*;
 import me.zhengjie.service.LocalStorageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 
 /**
-* @author Zheng Jie
-* @date 2019-09-05
-*/
+ * @author Zheng Jie
+ * @date 2019-09-05
+ */
 @Service
 @RequiredArgsConstructor
 public class LocalStorageServiceImpl extends ServiceImpl<LocalStorageMapper, LocalStorage> implements LocalStorageService {
@@ -49,12 +52,12 @@ public class LocalStorageServiceImpl extends ServiceImpl<LocalStorageMapper, Loc
     private final FileProperties properties;
 
     @Override
-    public PageResult<LocalStorage> queryAll(LocalStorageQueryCriteria criteria, Page<Object> page){
+    public PageResult<LocalStorage> queryAll(LocalStorageQueryCriteria criteria, Page<Object> page) {
         return PageUtil.toPage(localStorageMapper.findAll(criteria, page));
     }
 
     @Override
-    public List<LocalStorage> queryAll(LocalStorageQueryCriteria criteria){
+    public List<LocalStorage> queryAll(LocalStorageQueryCriteria criteria) {
         return localStorageMapper.findAll(criteria);
     }
 
@@ -64,8 +67,8 @@ public class LocalStorageServiceImpl extends ServiceImpl<LocalStorageMapper, Loc
         FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
         String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
         String type = FileUtil.getFileType(suffix);
-        File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type +  File.separator);
-        if(ObjectUtil.isNull(file)){
+        File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type + File.separator);
+        if (ObjectUtil.isNull(file)) {
             throw new BadRequestException("上传失败");
         }
         try {
@@ -79,8 +82,9 @@ public class LocalStorageServiceImpl extends ServiceImpl<LocalStorageMapper, Loc
                     FileUtil.getSize(multipartFile.getSize())
             );
             save(localStorage);
+            log.warn("id info is :{}" + localStorage.getId());
             return localStorage;
-        }catch (Exception e){
+        } catch (Exception e) {
             FileUtil.del(file);
             throw e;
         }
@@ -108,7 +112,7 @@ public class LocalStorageServiceImpl extends ServiceImpl<LocalStorageMapper, Loc
     public void download(List<LocalStorage> queryAll, HttpServletResponse response) throws IOException {
         List<Map<String, Object>> list = new ArrayList<>();
         for (LocalStorage localStorage : queryAll) {
-            Map<String,Object> map = new LinkedHashMap<>();
+            Map<String, Object> map = new LinkedHashMap<>();
             map.put("文件名", localStorage.getRealName());
             map.put("备注名", localStorage.getName());
             map.put("文件类型", localStorage.getType());

@@ -5,13 +5,13 @@ mybatis-plus:
 
 #配置数据源
 spring:
-#  elasticsearch:
-#    rest:
-#      uris: http://123.249.119.160:9200
-#      username: elastic
-#      password: 123456
-#      connection-timeout: 5000
-#      read-timeout: 5000
+  #  elasticsearch:
+  #    rest:
+  #      uris: http://123.249.119.160:9200
+  #      username: elastic
+  #      password: 123456
+  #      connection-timeout: 5000
+  #      read-timeout: 5000
   datasource:
     druid:
       db-type: com.alibaba.druid.pool.DruidDataSource
@@ -115,7 +115,7 @@ swagger:
 # 文件存储路径
 file:
   mac:
-    path: ~/file/
+    path: /Users/liukunkun/Desktop/dev/save/
     avatar: ~/avatar/
   linux:
     path: /home/eladmin/file/
@@ -126,5 +126,3 @@ file:
   # 文件大小 /M
   maxSize: 100
   avatarMaxSize: 5
-
-

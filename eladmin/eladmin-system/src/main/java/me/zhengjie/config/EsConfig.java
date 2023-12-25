@@ -33,7 +33,7 @@ public class EsConfig {
     @Bean
     public RestHighLevelClient restHighLevelClient() {
         RestClientBuilder builder = RestClient.builder(
-                new HttpHost("123.249.119.160", 9200, "http")
+                new HttpHost("10.129.218.54", 9200, "http")
         );
         // RestHighLevelClient client = new RestHighLevelClient(
         //         RestClient.builder(
@@ -43,7 +43,6 @@ public class EsConfig {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("elastic", "123456"));
         builder.setHttpClientConfigCallback(f -> f.setDefaultCredentialsProvider(credentialsProvider));
-
         return new RestHighLevelClient(builder);
     }
 }

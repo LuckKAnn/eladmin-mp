@@ -17,4 +17,17 @@ public class MilvusData {
     private String codeInfo;
 
     private String functionName;
+
+    private String level;
+
+    private String archTarget;
+
+    private String obs;
+
+
+    private String protectInfo;
+
+    private String faultInfo;
+
+    private String dangerInfo;
 }

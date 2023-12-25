@@ -1,5 +1,5 @@
 server:
-  port: 8000
+  port: 8080
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
@@ -20,8 +20,8 @@ spring:
     redis:
       repositories:
         enabled: false
-#  pid:
-#    file: /自行指定位置/eladmin.pid
+  #  pid:
+  #    file: /自行指定位置/eladmin.pid
 
   redis:
     #数据库索引
@@ -31,6 +31,11 @@ spring:
     password: ${REDIS_PWD:r-bp1gxes8mb7s1n620l:Lk1546165200}
     #连接超时时间
     timeout: 5000
+  neo4j:
+    uri: bolt://10.129.218.54:7687
+    authentication:
+      username: neo4j
+      password: 123456
 
 task:
   pool:
@@ -59,3 +64,31 @@ rsa:
 milvus:
   host: 10.129.218.54
   port: 19530
+
+
+
+rocketmq:
+  consumer:
+    group: springboot_consumer_group
+    # 一次拉取消息最大值，注意是拉取消息的最大值而非消费最大值
+    pull-batch-size: 10
+  name-server: 10.129.218.54:9876
+  producer:
+    # 发送同一类消息的设置为同一个group，保证唯一
+    group: springboot_producer_group
+    # 发送消息超时时间，默认3000
+    sendMessageTimeout: 10000
+    # 发送消息失败重试次数，默认2
+    retryTimesWhenSendFailed: 2
+    # 异步消息重试此处，默认2
+    retryTimesWhenSendAsyncFailed: 2
+    # 消息最大长度，默认1024 * 1024 * 4(默认4M)
+    maxMessageSize: 4096
+    # 压缩消息阈值，默认4k(1024 * 4)
+    compressMessageBodyThreshold: 4096
+    # 是否在内部发送失败时重试另一个broker，默认false
+    retryNextServer: false
+
+system:
+  mqCounterTopic: "mq_counter"
+  indexName: "bcsd_fault_func_index"
