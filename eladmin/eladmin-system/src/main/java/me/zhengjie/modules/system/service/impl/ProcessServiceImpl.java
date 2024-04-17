@@ -13,6 +13,7 @@ import me.zhengjie.modules.system.domain.SemanticVectorInfo;
 import me.zhengjie.modules.system.domain.SimilarityData;
 import me.zhengjie.modules.system.service.MilvusService;
 import me.zhengjie.modules.system.service.ProcessService;
+import me.zhengjie.utils.FileUtil;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -20,6 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -90,8 +95,26 @@ public class ProcessServiceImpl implements ProcessService {
             //     这个地方不需要处理函数的名称
             // 获取到所有的函数信息
             String functionDTOJson = restTemplate.postForObject(FILE_PARTITION, file.getAbsolutePath(), String.class);
+            // 应该是String
             List<FunctionDTO> functionDTOS = JSONObject.parseObject(functionDTOJson, new TypeReference<List<FunctionDTO>>() {
             });
+            for (FunctionDTO functionDTO : functionDTOS) {
+                // 读取文件
+                //
+                long line = -1;
+                try {
+                    line = Files.lines(Paths.get(file.getAbsolutePath())).count();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                String content = FileUtil.readString(file, Charset.defaultCharset());
+                functionDTO.setFunctionName(file.getName());
+                functionDTO.setCodeInfo(content);
+                functionDTO.setCodeLine(line);
+                functionDTO.setComment("函数本来的注释信息");
+                functionDTO.setCompilable(true);
+            }
+
             return functionDTOS;
         }
 
