@@ -13,6 +13,9 @@ public interface MilvusService {
 
     public SearchResultDTO search(byte[] arcsoftFeature);
 
+
+    public SearchResultDTO searchBy(String name, String code);
+
     List<SimilarityData> search(List<List<Float>> vector);
 
     public Long countVector();

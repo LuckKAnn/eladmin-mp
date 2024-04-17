@@ -31,6 +31,19 @@
         </dependency>
 
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.7.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
             <version>2.3.3</version>
@@ -63,11 +76,11 @@
             <artifactId>eladmin-tools</artifactId>
             <version>1.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.lejon</groupId>
-            <artifactId>T-SNE-Java</artifactId>
-            <version>v2.6.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.lejon</groupId>-->
+<!--            <artifactId>T-SNE-Java</artifactId>-->
+<!--            <version>v2.6.3</version>-->
+<!--        </dependency>-->
 
         <!-- Spring boot websocket -->
         <dependency>

@@ -4,6 +4,7 @@ server:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
 
+
 mybatis-plus:
   configuration:
     # 关闭二级缓存
@@ -26,9 +27,9 @@ spring:
   redis:
     #数据库索引
     database: ${REDIS_DB:1}
-    host: ${REDIS_HOST:lkkredis.redis.rds.aliyuncs.com}
+    host: ${REDIS_HOST:10.129.218.54}
     port: ${REDIS_PORT:6379}
-    password: ${REDIS_PWD:r-bp1gxes8mb7s1n620l:Lk1546165200}
+    password: ${REDIS_PWD:}
     #连接超时时间
     timeout: 5000
   neo4j:

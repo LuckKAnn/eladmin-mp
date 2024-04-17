@@ -8,14 +8,18 @@ import lombok.extern.slf4j.Slf4j;
 import me.zhengjie.modules.system.FuncCodeInfoDTO;
 import me.zhengjie.modules.system.domain.FilePathDTO;
 import me.zhengjie.modules.system.domain.FunctionDTO;
+import me.zhengjie.modules.system.domain.SearchResultDTO;
 import me.zhengjie.modules.system.domain.SimilarityData;
 import me.zhengjie.modules.system.service.ElasticCodeService;
 import me.zhengjie.modules.system.service.MilvusService;
 import me.zhengjie.modules.system.service.ProcessService;
 import me.zhengjie.utils.FileUtil;
+import me.zhengjie.utils.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,13 +55,17 @@ public class ProcessController {
 
     final MilvusService milvusService;
 
+    @Autowired
+    RestTemplate restTemplate;
+
     @PostMapping("/upload")
     @ApiOperation("上传文件")
-    public ResponseEntity<Object> postProcessFile(@RequestParam MultipartFile file, HttpServletRequest request) throws IOException {
+    public ResponseEntity<String> postProcessFile(@RequestParam MultipartFile file, HttpServletRequest request) throws IOException {
         String fileName = "";
+        File deployFile = null;
         if (file != null) {
             fileName = file.getOriginalFilename();
-            File deployFile = new File(fileSavePath + fileName);
+            deployFile = new File(fileSavePath + fileName);
             FileUtil.del(deployFile);
             file.transferTo(deployFile);
             // 文件下一步要根据文件名字来
@@ -67,7 +75,25 @@ public class ProcessController {
         }
         System.out.println("文件上传的原名称为:" + Objects.requireNonNull(file).getOriginalFilename());
 
-        return null;
+        // 调用本地命令，执行retdec的反编译工作
+        String absolutePath = deployFile.getAbsolutePath();
+
+        File file1 = new File(absolutePath + "/decompile");
+        boolean mkdir = file1.mkdir();
+
+        if (deployFile != null && deployFile.isFile()) {
+            String[] cmds = new String[]{
+                    "retdec-decompiler",
+                    "--outdir",
+                    file1.getAbsolutePath(),
+                    deployFile.getAbsolutePath(),
+            };
+            Process exec = Runtime.getRuntime().exec(cmds);
+        }
+
+        // 或者直接返回指定的文件夹名称即可
+        // 获取指定文件夹下的所有文件，返回
+        return ResponseEntity.ok(file1.getAbsolutePath());
     }
 
     //     有可能我就是上传一段LLVM源程序的
@@ -79,17 +105,19 @@ public class ProcessController {
     }
 
     @PostMapping("/funcInfo")
-    public ResponseEntity<List<SimilarityData>> postProcessLlvmByInfo(@RequestBody String functionInfo) {
-
+    public ResponseEntity<SearchResultDTO> postProcessLlvmByInfo(@RequestBody String functionInfo) {
         FuncCodeInfoDTO funcCodeInfoDTO = JSONObject.parseObject(functionInfo, FuncCodeInfoDTO.class);
-        List<SimilarityData> search = milvusService.search(new byte[10]).getSimilarities();
+        // 其实应该是这个
+        // List<SimilarityData> search = milvusService.search(new byte[10]).getSimilarities();
+        SearchResultDTO search = milvusService.searchBy(funcCodeInfoDTO.getFunctionName(), funcCodeInfoDTO.getCode());
         // 现在有一个新的vector是不是应该也要插入到Milvus里面去
-        search.sort(Comparator.comparingDouble(SimilarityData::getScore));
+        // search.sort(Comparator.comparingDouble(SimilarityData::getScore));
         return ResponseEntity.ok(search);
     }
 
     @PostMapping("/files")
     public ResponseEntity<Long> uploadFuncAndGetInfo(@RequestBody String body) {
+        // 从指定文件夹获取文件即可
         List<FilePathDTO> filePathFromPath = processService.getFilePathFromPath(body);
         JSONObject jsonObject = JSONObject.parseObject(body);
         Long pathId = jsonObject.getLong("path");
@@ -97,7 +125,6 @@ public class ProcessController {
     }
 
     // 写一个获取路径的
-
     @GetMapping("/path")
     public ResponseEntity<List<FilePathDTO>> getPath(@RequestParam("path") String path) {
         List<FilePathDTO> filePathFromPath = processService.getFilePathFromPath(path);

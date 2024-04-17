@@ -1,6 +1,7 @@
 package me.zhengjie.modules.system.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import io.milvus.param.R;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,11 +9,15 @@ import me.zhengjie.Utils.PythonUtils;
 import me.zhengjie.Utils.RandomInfoUtils;
 import me.zhengjie.modules.system.domain.FilePathDTO;
 import me.zhengjie.modules.system.domain.FunctionDTO;
+import me.zhengjie.modules.system.domain.SemanticVectorInfo;
 import me.zhengjie.modules.system.domain.SimilarityData;
 import me.zhengjie.modules.system.service.MilvusService;
 import me.zhengjie.modules.system.service.ProcessService;
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.*;
@@ -34,21 +39,32 @@ public class ProcessServiceImpl implements ProcessService {
 
     final String SCRIPT_PATH = "";
 
+    @Autowired
+    RestTemplate restTemplate;
+
+    private final String CODE_PROCESS_URL = "10.129.218.54:5000/api/model";
+
+    private final String FILE_PARTITION = "10.129.218.54:5000/api/partition";
+
     @Override
     public List<SimilarityData> doProcess(String code) {
         // 假设已经有了code
         // 到底是传一个文件好呢，还是传一个code比较方便
-        PythonUtils.ScriptParam scriptParam = new PythonUtils.ScriptParam();
-        String codeVector = null;
-        try {
-            codeVector = PythonUtils.runPythonScript(SCRIPT_PATH, Collections.singletonList(scriptParam));
-        } catch (Exception e) {
-            log.error("exp ", JSONObject.toJSONString(e.getMessage()));
-            // throw new RuntimeException(e);
-        }
-
-        // codeVector 解码吗
-        List<List<Float>> vector = parseVector(codeVector);
+        // 直接调用接口就行了吧。
+        SemanticVectorInfo semanticVectorInfo = restTemplate.postForObject(CODE_PROCESS_URL, code, SemanticVectorInfo.class);
+        //
+        //
+        // PythonUtils.ScriptParam scriptParam = new PythonUtils.ScriptParam();
+        // String codeVector = null;
+        // try {
+        //     codeVector = PythonUtils.runPythonScript(SCRIPT_PATH, Collections.singletonList(scriptParam));
+        // } catch (Exception e) {
+        //     log.error("exp ", JSONObject.toJSONString(e.getMessage()));
+        //     // throw new RuntimeException(e);
+        // }
+        //
+        // // codeVector 解码吗
+        // List<List<Float>> vector = parseVector(codeVector);
 
 
         return null;
@@ -57,7 +73,7 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public List<FilePathDTO> getFilePathFromPath(String path) {
         log.info("get path:" + path);
-        path = "/Users/liukunkun/Downloads/mockdata/apache/";
+        // path = "/Users/liukunkun/Downloads/mockdata/apache/";
         File file = new File(path);
         FilePathDTO filePathDTO = traversePath(file);
         return Collections.singletonList(filePathDTO);
@@ -73,7 +89,10 @@ public class ProcessServiceImpl implements ProcessService {
             //     那边生成之后，所有的函数都要写入到ES内部去，每个函数还要走模型吗
             //     这个地方不需要处理函数的名称
             // 获取到所有的函数信息
-
+            String functionDTOJson = restTemplate.postForObject(FILE_PARTITION, file.getAbsolutePath(), String.class);
+            List<FunctionDTO> functionDTOS = JSONObject.parseObject(functionDTOJson, new TypeReference<List<FunctionDTO>>() {
+            });
+            return functionDTOS;
         }
 
         return parseFunctionList("");

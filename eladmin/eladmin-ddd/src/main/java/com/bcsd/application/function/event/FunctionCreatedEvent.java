@@ -8,4 +8,44 @@ package com.bcsd.application.function.event;
  * @Version 1.0
  */
 public class FunctionCreatedEvent {
+
+    public void functionCreateProcess(){
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        doHelp();
+    }
+    private void doHelp(){
+        System.currentTimeMillis();
+
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+
+    }
 }

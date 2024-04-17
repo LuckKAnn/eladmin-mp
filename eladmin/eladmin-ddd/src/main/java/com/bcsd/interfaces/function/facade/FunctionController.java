@@ -36,10 +36,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/func")
 public class FunctionController {
 
-    private final FunctionInfoSearchService functionInfoSearchService;
+    private  FunctionInfoSearchService functionInfoSearchService;
 
-    private final FunctionUploadService functionUploadService;
+    private  FunctionUploadService functionUploadService;
 
+    public FunctionController() {
+    }
 
     public FunctionController(FunctionInfoSearchService functionInfoSearchService, FunctionUploadService functionUploadService) {
         this.functionInfoSearchService = functionInfoSearchService;
@@ -49,56 +51,212 @@ public class FunctionController {
     @ApiOperation("分页查询函数列表")
     @GetMapping("/list")
     public ResponseEntity<PageResult<FunctionInfoDTO>> getFunByPage(@RequestParam("page") int pageId, @RequestParam("size") Integer size) {
-        List<Function> functions = functionInfoSearchService.batchQueryFunctionInfo(pageId, size);
-
-        List<FunctionInfoDTO> all = functions.stream().map(FunctionInfoAssembler::convertToDTO).collect(Collectors.toList());
-
-        long functionNumber = functionInfoSearchService.getFunctionNumber();
-        return ResponseEntity.ok(PageUtil.toPage(
-                all,
-                functionNumber
-        ));
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        // List<Function> functions = functionInfoSearchService.batchQueryFunctionInfo(pageId, size);
+        //
+        // List<FunctionInfoDTO> all = functions.stream().map(FunctionInfoAssembler::convertToDTO).collect(Collectors.toList());
+        //
+        // long functionNumber = functionInfoSearchService.getFunctionNumber();
+        // return ResponseEntity.ok(PageUtil.toPage(
+        //         all,
+        //         functionNumber
+        // ));
+        return null;
     }
 
     @ApiOperation("根据Id查询函数的代码")
     @GetMapping("/code")
     public ResponseEntity<FunctionInfoDTO> getFuncCodeById(@RequestParam("id") String id) {
-
-        Function function = functionInfoSearchService.queryFunctionInfo(Long.valueOf(id));
-        return ResponseEntity.ok(FunctionInfoAssembler.convertToDTO(function));
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        // Function function = functionInfoSearchService.queryFunctionInfo(Long.valueOf(id));
+        // return ResponseEntity.ok(FunctionInfoAssembler.convertToDTO(function));
+        return null;
     }
 
 
     @ApiOperation("根据函数名称查询函数代码")
     @GetMapping("/name")
     public ResponseEntity<List<FunctionInfoDTO>> getFunctionByName(@RequestBody FunctionSearchDTO searchDTO) {
-
-        List<Function> functions = functionInfoSearchService.searchFunctionInfo(searchDTO);
-
-        List<FunctionInfoDTO> collect = functions.stream().map(FunctionInfoAssembler::convertToDTO).collect(Collectors.toList());
-        return ResponseEntity.ok(collect);
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        //
+        // List<Function> functions = functionInfoSearchService.searchFunctionInfo(searchDTO);
+        //
+        // List<FunctionInfoDTO> collect = functions.stream().map(FunctionInfoAssembler::convertToDTO).collect(Collectors.toList());
+        // return ResponseEntity.ok(collect);
+        return null;
     }
 
     @PostMapping("/function/upload")
     @ApiOperation("上传")
     public ResponseEntity<Void> uploadFunctionDataset(@RequestParam MultipartFile file, HttpServletRequest request) throws IOException {
-
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
         // datasetUploadService;
-        try {
-            // functionInfoSearchService.uploadFile(file);
-            return ResponseEntity.ok(null);
-        } catch (Exception e) {
-            return (ResponseEntity<Void>) ResponseEntity.badRequest();
-        }
+        // try {
+        //     // functionInfoSearchService.uploadFile(file);
+        //     return ResponseEntity.ok(null);
+        // } catch (Exception e) {
+        //     return (ResponseEntity<Void>) ResponseEntity.badRequest();
+        // }
+        return  null;
     }
 
     @PostMapping("/function/single")
     @ApiOperation("处理单函数上传")
     public ResponseEntity<SearchResultDTO> uploadFunctionDataset(@RequestParam SingleFunctionDTO singleFunctionDTO) throws IOException {
         // 各州校验？
-        SearchResultDTO searchResultDTO = functionUploadService.doProcessSingleFunctionUpload(singleFunctionDTO);
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
 
-        return ResponseEntity.ok(searchResultDTO);
+        // SearchResultDTO searchResultDTO = functionUploadService.doProcessSingleFunctionUpload(singleFunctionDTO);
+        //
+        // return ResponseEntity.ok(searchResultDTO);
+        return null;
     }
 
 }

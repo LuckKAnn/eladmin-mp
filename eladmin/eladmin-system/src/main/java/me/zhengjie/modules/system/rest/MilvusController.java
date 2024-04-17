@@ -20,7 +20,6 @@ public class MilvusController {
 
 
     final MilvusService milvusService;
-
     public MilvusController(MilvusService milvusService) {
         this.milvusService = milvusService;
     }
@@ -32,6 +31,7 @@ public class MilvusController {
 
     @GetMapping("/v2/search")
     public SearchResultDTO searchV2() {
+        // TODO
         return milvusService.search(new byte[10]);
 
     }

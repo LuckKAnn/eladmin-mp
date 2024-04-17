@@ -2,6 +2,8 @@ package com.bcsd.interfaces.function.facade;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -12,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @Version 1.0
  */
 class FunctionControllerTest {
+
+    FunctionController functionController = new FunctionController();
 
     @Test
     void testGetFunByPageSuccess() {
@@ -35,5 +39,58 @@ class FunctionControllerTest {
 
     @Test
     void testUploadFunctionDatasetUnSatisfied() {
+    }
+
+    @Test
+    void getFunByPage() {
+        functionController.getFunByPage(0, 0);
+    }
+
+    @Test
+    void getFuncCodeById() {
+        functionController.getFuncCodeById("");
+    }
+
+    @Test
+    void getFunctionByName() {
+        functionController.getFunctionByName(null);
+    }
+
+    @Test
+    void uploadFunctionDataset() {
+        try {
+            functionController.uploadFunctionDataset(null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void testUploadFunctionDataset() {
+        try {
+            functionController.uploadFunctionDataset(null, null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void testGetFunByPage() {
+    }
+
+    @Test
+    void testGetFuncCodeById() {
+    }
+
+    @Test
+    void testGetFunctionByName() {
+    }
+
+    @Test
+    void testUploadFunctionDataset1() {
+    }
+
+    @Test
+    void testUploadFunctionDataset2() {
     }
 }

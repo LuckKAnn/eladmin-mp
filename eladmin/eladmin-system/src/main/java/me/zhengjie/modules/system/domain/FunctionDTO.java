@@ -42,5 +42,7 @@ public class FunctionDTO {
 
     private String comeInfo;
 
+    private String absolutePath;
+
 
 }

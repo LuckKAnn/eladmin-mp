@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class MilvusData {
 
-    private Long vectorId;
+    private String vectorId;
 
     private String codeInfo;
 

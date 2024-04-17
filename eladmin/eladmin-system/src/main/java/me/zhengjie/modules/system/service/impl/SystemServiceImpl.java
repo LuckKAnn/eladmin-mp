@@ -1,5 +1,6 @@
 package me.zhengjie.modules.system.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import me.zhengjie.modules.system.domain.Dataset;
 import me.zhengjie.modules.system.mapper.DatasetMapper;
@@ -22,13 +23,27 @@ public class SystemServiceImpl implements SystemService {
     @Autowired
     private DatasetMapper datasetMapper;
 
+    private List<Dataset> cacheList = null;
+
+    private Dataset cacheDataset = null;
+
     @Override
     public List<Dataset> getDatasets() {
-        return datasetMapper.selectList(null);
+        if (CollectionUtil.isNotEmpty(cacheList)) {
+            return cacheList;
+        }
+        List<Dataset> datasets = datasetMapper.selectList(null);
+        cacheList = datasets;
+        // return datasetMapper.selectList(null);
+        return cacheList;
     }
 
     @Override
     public Dataset getById(Long id) {
-        return datasetMapper.selectById(id);
+        if (cacheDataset == null) {
+            Dataset dataset = datasetMapper.selectById(id);
+            cacheDataset = dataset;
+        }
+        return cacheDataset;
     }
 }

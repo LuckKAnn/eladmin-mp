@@ -15,17 +15,36 @@ import com.bcsd.interfaces.function.dto.FunctionInfoDTO;
 public class FunctionInfoAssembler {
 
 
+
     public static FunctionInfoDTO convertToDTO(Function function) {
         FunctionInfoDTO functionInfoDTO = new FunctionInfoDTO();
-
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
-        functionInfoDTO.getId();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
+System.currentTimeMillis();
 
         return functionInfoDTO;
     }

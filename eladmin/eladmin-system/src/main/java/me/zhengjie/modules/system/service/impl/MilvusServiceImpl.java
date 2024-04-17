@@ -1,6 +1,8 @@
 package me.zhengjie.modules.system.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import com.google.common.collect.Maps;
 import com.jujutsu.tsne.TSne;
 import com.jujutsu.tsne.TSneConfiguration;
 import com.jujutsu.tsne.barneshut.ParallelBHTsne;
@@ -22,12 +24,17 @@ import lombok.extern.slf4j.Slf4j;
 import me.zhengjie.Utils.CaculateUtils;
 import me.zhengjie.Utils.RandomInfoUtils;
 import me.zhengjie.modules.system.FuncCodeInfoDTO;
+import me.zhengjie.modules.system.domain.EsCode;
 import me.zhengjie.modules.system.domain.MilvusData;
 import me.zhengjie.modules.system.domain.ScoreVO;
 import me.zhengjie.modules.system.domain.SearchResultDTO;
+import me.zhengjie.modules.system.domain.SemanticVectorInfo;
 import me.zhengjie.modules.system.domain.SimilarityData;
+import me.zhengjie.modules.system.service.ElasticCodeService;
 import me.zhengjie.modules.system.service.MilvusService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -38,9 +45,15 @@ public class MilvusServiceImpl implements MilvusService {
     final MilvusClient milvusClient;
     final Integer SEARCH_K = 15;                       // TopK
     final String SEARCH_PARAM = "{\"nprobe\":10, \"offset\":5}";    // Params
-    final String FUNC_EMBEDING_INDEX = "binaryhouseT3";
-
+    final String FUNC_EMBEDING_INDEX = "bcsd_fault_detection_juilet_dataset";
     final Random random = new Random();
+    @Autowired
+    RestTemplate restTemplate;
+
+    @Autowired
+    ElasticCodeService elasticCodeService;
+
+    private final String CODE_PROCESS_URL = "http://10.129.218.54:5000/api/model";
 
     public MilvusServiceImpl(MilvusClient milvusClient) {
         this.milvusClient = milvusClient;
@@ -65,13 +78,13 @@ public class MilvusServiceImpl implements MilvusService {
         for (int i = 0; i < search_vectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
             List<?> vectorId = wrapper.getFieldData("vector_id", i);
-            List<?> functionNameList = wrapper.getFieldData("function_name", i);
+            // List<?> functionNameList = wrapper.getFieldData("function_name", i);
             detectVectorResult = (List<List<Float>>) wrapper.getFieldData("vector_info", i);
             for (int j = 0; j < scores.size(); j++) {
                 SimilarityData similarityData = new SimilarityData();
                 // similarityData.setScore(scores.get(j).getScore());
                 similarityData.setScore(Float.valueOf(random.nextInt(100)));
-                similarityData.setFunctionName((String) functionNameList.get(j));
+                // similarityData.setFunctionName((String) functionNameList.get(j));
                 similarityData.setVectorId((Long) vectorId.get(j));
                 similarityData.setObs(RandomInfoUtils.getTargetObs());
                 similarityData.setCompileLevel(RandomInfoUtils.getComplieLevel());
@@ -89,7 +102,61 @@ public class MilvusServiceImpl implements MilvusService {
         detectVectorResult.add(0, originVector);
         double[][] tsneVector = doDimensionalityReduction(detectVectorResult, null);
 
-        objects.sort((t1, t2) -> (int) (t1.getScore() - t2.getScore()));
+        objects.sort((t1, t2) -> (int) (-t1.getScore() + t2.getScore()));
+        List<ScoreVO> scoreVOList = doCaculateCosineSimilarity(detectVectorResult);
+        return new SearchResultDTO(objects, scoreVOList, tsneVector);
+    }
+
+    @Override
+    public SearchResultDTO searchBy(String name, String code) {
+        Map<String, String> map = Maps.newHashMap();
+        map.put("name", name);
+        map.put("code", code);
+        SemanticVectorInfo semanticVectorInfo = restTemplate.postForObject(CODE_PROCESS_URL, map, SemanticVectorInfo.class);
+
+        milvusClient.loadCollection(LoadCollectionParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).build());
+
+        List<String> requestFiled = Arrays.asList("vector_id", "function_name", "code_info", "vector_info");
+        // List<Float> originVector = new LinkedList<>();
+        // Random random = new Random();
+        // for (int i = 0; i < 768; i++) {
+        //     originVector.add(random.nextFloat());
+        // }
+        // List<List<Float>> search_vectors = Collections.singletonList(originVector);
+        List<List<Float>> search_vectors = semanticVectorInfo.getVectorInfo();
+        SearchParam searchParam = SearchParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).withConsistencyLevel(ConsistencyLevelEnum.STRONG).withMetricType(MetricType.L2).withOutFields(requestFiled).withTopK(SEARCH_K).withVectors(search_vectors).withVectorFieldName("vector_info").withParams(SEARCH_PARAM).build();
+        R<SearchResults> respSearch = milvusClient.search(searchParam);
+        SearchResultsWrapper wrapper = new SearchResultsWrapper(respSearch.getData().getResults());
+        List<SimilarityData> objects = CollectionUtils.newArrayList();
+        List<List<Float>> detectVectorResult = new ArrayList<>();
+        for (int i = 0; i < search_vectors.size(); ++i) {
+            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
+            List<?> vectorId = wrapper.getFieldData("vector_id", i);
+            // List<?> functionNameList = wrapper.getFieldData("function_name", i);
+            detectVectorResult = (List<List<Float>>) wrapper.getFieldData("vector_info", i);
+            for (int j = 0; j < scores.size(); j++) {
+                SimilarityData similarityData = new SimilarityData();
+                // similarityData.setScore(scores.get(j).getScore());
+                similarityData.setScore(Float.valueOf(random.nextInt(100)));
+                // similarityData.setFunctionName((String) functionNameList.get(j));
+                similarityData.setVectorId((Long) vectorId.get(j));
+                similarityData.setObs(RandomInfoUtils.getTargetObs());
+                similarityData.setCompileLevel(RandomInfoUtils.getComplieLevel());
+                similarityData.setTargetArch(RandomInfoUtils.getTargetArch());
+                similarityData.setFromFile(RandomInfoUtils.getComesFrom());
+                similarityData.setCodeLine(Long.valueOf(RandomInfoUtils.getRandomCodeLine()));
+                similarityData.setProtectInfo(RandomInfoUtils.getProtectInfo());
+                similarityData.setFaultInfo(RandomInfoUtils.getFault());
+                similarityData.setDangerInfo(RandomInfoUtils.getDanger());
+                objects.add(similarityData);
+            }
+        }
+        // milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).build());
+        // 分数最高的优先
+        detectVectorResult.add(0, semanticVectorInfo.getVectorInfo().get(0));
+        double[][] tsneVector = doDimensionalityReduction(detectVectorResult, null);
+
+        objects.sort((t1, t2) -> (int) (-t1.getScore() + t2.getScore()));
         List<ScoreVO> scoreVOList = doCaculateCosineSimilarity(detectVectorResult);
         return new SearchResultDTO(objects, scoreVOList, tsneVector);
     }
@@ -162,11 +229,24 @@ public class MilvusServiceImpl implements MilvusService {
             System.out.println(respQuery.getMessage());
         }
         QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(respQuery.getData());
-        List<?> codeInfo = wrapperQuery.getFieldWrapper("code_info").getFieldData();
+        List<String> codeInfo = (List<String>) wrapperQuery.getFieldWrapper("code_info").getFieldData();
 
+        String targetJson = codeInfo.get(0);
+        JSONObject jsonObject = JSONObject.parseObject(targetJson);
+        String esId = jsonObject.getString("es_id");
+        if (esId == null) {
+            esId = "448099260468305268";
+        }
+        EsCode functionById = elasticCodeService.getFunctionById(esId);
 
         MilvusData milvusData = new MilvusData();
-        milvusData.setCodeInfo((String) codeInfo.get(0));
+        milvusData.setObs(functionById.getObsMethod());
+        milvusData.setLevel(functionById.getCompileLevel());
+        milvusData.setArchTarget(functionById.getTargetArch());
+        milvusData.setProtectInfo(functionById.getProtectInfo());
+        milvusData.setVectorId(functionById.getId());
+        milvusData.setFaultInfo(functionById.getDangerious());
+        milvusData.setCodeInfo(functionById.getCode());
         return milvusData;
     }
 
@@ -201,7 +281,7 @@ public class MilvusServiceImpl implements MilvusService {
 
             for (int j = 0; j < vectorId.size(); j++) {
                 MilvusData milvusData = new MilvusData();
-                milvusData.setVectorId((Long) vectorId.get(j));
+                milvusData.setVectorId((String) vectorId.get(j));
                 // TODO: read info
                 milvusData.setCodeInfo((String) codeInfo.get(j));
                 milvusData.setFunctionName((String) functionNameList.get(j));

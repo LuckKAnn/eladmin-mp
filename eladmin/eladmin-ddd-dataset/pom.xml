@@ -45,11 +45,11 @@
         <!-- https://mvnrepository.com/artifact/com.github.lejon.T-SNE-Java/tsne -->
         <!-- https://mvnrepository.com/artifact/org.renjin.cran/tsne -->
 
-        <dependency>
-            <groupId>com.github.lejon</groupId>
-            <artifactId>T-SNE-Java</artifactId>
-            <version>v2.6.3</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.github.lejon</groupId>-->
+<!--            <artifactId>T-SNE-Java</artifactId>-->
+<!--            <version>v2.6.3</version>-->
+<!--        </dependency>-->
         <!-- 代码生成模块 -->
         <dependency>
             <groupId>me.zhengjie</groupId>

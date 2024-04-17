@@ -25,11 +25,96 @@ public class FunctionInfoQueryService {
     }
 
     public Function queryFunctionInfo(Long functionId) {
-        return function.functionInfoQuery(functionId);
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        doHelp();
+
+        return new Function();
+        // return function.functionInfoQuery(functionId);
+    }
+    private void doHelp(){
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+
     }
 
     public List<Function> batchQueryFunctionInfo(List<Long> functionId) {
-        return function.batchFunctionInfoQuery(functionId);
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        System.currentTimeMillis();
+        doHelp();
+        // return function.batchFunctionInfoQuery(functionId);
+        return null;
     }
 
 
