@@ -25,10 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +47,7 @@ public class ProcessController {
 //     将该消息写入到我们的Milvus和Es当中
 
     final ProcessService processService;
-    private final String fileSavePath = "/Users/liukunkun/Desktop/dev/save/";
+    private final String fileSavePath = "/home/luckkun/桌面/saves/";
 
     final ElasticCodeService elasticCodeService;
 
@@ -57,6 +55,10 @@ public class ProcessController {
 
     @Autowired
     RestTemplate restTemplate;
+
+    @Autowired
+    RedisUtils redisUtils;
+
 
     @PostMapping("/upload")
     @ApiOperation("上传文件")
@@ -96,6 +98,52 @@ public class ProcessController {
         return ResponseEntity.ok(file1.getAbsolutePath());
     }
 
+
+    @PostMapping("/decompile")
+    @ApiOperation("反编译文件")
+    public ResponseEntity<String> postProcessDecompileFile(@RequestBody String datas, HttpServletRequest request) throws IOException {
+
+        FuncCodeInfoDTO funcCodeInfoDTO = JSONObject.parseObject(datas, FuncCodeInfoDTO.class);
+        redisUtils.set(funcCodeInfoDTO.getFunctionName(), JSONObject.toJSONString(funcCodeInfoDTO), 10, TimeUnit.MINUTES);
+
+        String fileName = funcCodeInfoDTO.getPath();
+        File file = new File(fileName);
+        if (!file.exists()) {
+            throw new NullPointerException();
+        }
+
+        // 调用本地命令，执行retdec的反编译工作
+        String absolutePath = file.getAbsolutePath();
+
+        String outputFileName = file.getName().replaceFirst("[.][^.]+$", "");
+        File newdir = new File(file.getParent(), outputFileName);
+        boolean mkdir = newdir.mkdir();
+        File output = new File(newdir.getPath(), "deCompile");
+        boolean mkdir1 = output.mkdir();
+        String[] cmds = new String[]{
+                "retdec-decompiler",
+                "-o",
+                output.getAbsolutePath(),
+                file.getAbsolutePath(),
+        };
+        System.out.println(Arrays.toString(cmds));
+        Process exec = Runtime.getRuntime().exec(cmds);
+        int status = -1;
+        try {
+            status = exec.waitFor();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        if (status != 0) {
+            System.err.println("Failed to call shell's command and the return status's is: " + status);
+        }
+
+        // 或者直接返回指定的文件夹名称即可
+        // 获取指定文件夹下的所有文件，返回
+        return ResponseEntity.ok(newdir.getAbsolutePath());
+    }
+
+
     //     有可能我就是上传一段LLVM源程序的
     @GetMapping("/llvm")
     public ResponseEntity<List<SimilarityData>> postProcessLlvm(@RequestBody String llvmBody) {
@@ -107,6 +155,8 @@ public class ProcessController {
     @PostMapping("/funcInfo")
     public ResponseEntity<SearchResultDTO> postProcessLlvmByInfo(@RequestBody String functionInfo) {
         FuncCodeInfoDTO funcCodeInfoDTO = JSONObject.parseObject(functionInfo, FuncCodeInfoDTO.class);
+        redisUtils.set(funcCodeInfoDTO.getFunctionName(), JSONObject.toJSONString(funcCodeInfoDTO), 10, TimeUnit.MINUTES);
+
         // 其实应该是这个
         // List<SimilarityData> search = milvusService.search(new byte[10]).getSimilarities();
         SearchResultDTO search = milvusService.searchBy(funcCodeInfoDTO.getFunctionName(), funcCodeInfoDTO.getCode());
@@ -119,9 +169,9 @@ public class ProcessController {
     public ResponseEntity<Long> uploadFuncAndGetInfo(@RequestBody String body) {
         // 从指定文件夹获取文件即可
         List<FilePathDTO> filePathFromPath = processService.getFilePathFromPath(body);
-        JSONObject jsonObject = JSONObject.parseObject(body);
-        Long pathId = jsonObject.getLong("path");
-        return ResponseEntity.ok(pathId);
+//        JSONObject jsonObject = JSONObject.parseObject(body);
+//        Long pathId = jsonObject.getLong("path");
+        return ResponseEntity.ok(1L);
     }
 
     // 写一个获取路径的
@@ -142,7 +192,8 @@ public class ProcessController {
         List<FunctionDTO> functionDTOS = processService.doProcessFile(file);
         List<FunctionDTO> result = functionDTOS.stream().map((ft) -> {
             ft.setFileName(filePath);
-            ft.setComeInfo("Apache");
+            // 来源信息
+            ft.setComeInfo("Self Upload");
             return ft;
         }).collect(Collectors.toList());
         // if (!file.exists() || file.isDirectory()) {
@@ -150,6 +201,14 @@ public class ProcessController {
         //     return ResponseEntity.ok(null);
         // }
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/origin")
+    public ResponseEntity<FuncCodeInfoDTO> getOriginFunctionDTO(@RequestParam String functionName) {
+        String cacheInfo = (String) redisUtils.get(functionName);
+        FuncCodeInfoDTO parse = JSONObject.parseObject(cacheInfo, FuncCodeInfoDTO.class);
+
+        return ResponseEntity.ok(parse);
     }
 
 }

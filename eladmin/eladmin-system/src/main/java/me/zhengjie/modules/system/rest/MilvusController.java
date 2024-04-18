@@ -32,7 +32,8 @@ public class MilvusController {
     @GetMapping("/v2/search")
     public SearchResultDTO searchV2() {
         // TODO
-        return milvusService.search(new byte[10]);
+        return new SearchResultDTO();
+//        return milvusService.search(new byte[10]);
 
     }
 

@@ -32,7 +32,6 @@ public class SimilarityData {
 
     private String obs;
 
-
     private Long codeLine;
 
     private String protectInfo;

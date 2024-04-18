@@ -16,6 +16,7 @@
 package me.zhengjie.exception;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -24,6 +25,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
  * @date 2018-11-23
  * 统一异常处理
  */
+@Setter
 @Getter
 public class BadRequestException extends RuntimeException{
 

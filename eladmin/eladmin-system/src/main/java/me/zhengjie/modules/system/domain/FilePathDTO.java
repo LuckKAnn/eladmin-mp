@@ -17,6 +17,8 @@ public class FilePathDTO {
 
     private String pathName;
 
+    private String absolutePath;
+
     private boolean isDir;
 
     private List<FilePathDTO> children;

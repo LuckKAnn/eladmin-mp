@@ -1,6 +1,7 @@
 package me.zhengjie.modules.system;
 
 import lombok.Data;
+import me.zhengjie.utils.PageResult;
 
 /**
  * @Author liukun.inspire
@@ -14,6 +15,8 @@ public class FuncCodeInfoDTO {
 
     private String functionName;
 
+    private String desc;
+
     private String level;
 
     private String targetArch;
@@ -21,4 +24,6 @@ public class FuncCodeInfoDTO {
     private String obs;
 
     private String code;
+
+    private String path;
 }

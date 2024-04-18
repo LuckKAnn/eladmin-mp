@@ -92,4 +92,4 @@ rocketmq:
 
 system:
   mqCounterTopic: "mq_counter"
-  indexName: "bcsd_fault_func_index"
+  indexName: "test_bcsd_index"

@@ -11,6 +11,7 @@ public class EsCodeEntity {
     private Long id;
 
     private String functionName;
+
     private String code;
 
     private String leakInfo;

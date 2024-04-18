@@ -17,6 +17,7 @@ import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.response.FieldDataWrapper;
 import io.milvus.response.GetCollStatResponseWrapper;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
@@ -32,6 +33,7 @@ import me.zhengjie.modules.system.domain.SemanticVectorInfo;
 import me.zhengjie.modules.system.domain.SimilarityData;
 import me.zhengjie.modules.system.service.ElasticCodeService;
 import me.zhengjie.modules.system.service.MilvusService;
+import me.zhengjie.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -45,13 +47,16 @@ public class MilvusServiceImpl implements MilvusService {
     final MilvusClient milvusClient;
     final Integer SEARCH_K = 15;                       // TopK
     final String SEARCH_PARAM = "{\"nprobe\":10, \"offset\":5}";    // Params
-    final String FUNC_EMBEDING_INDEX = "bcsd_fault_detection_juilet_dataset";
+    final String FUNC_EMBEDING_INDEX = "test02_bcsd_fault_detection_juilet_dataset";
     final Random random = new Random();
     @Autowired
     RestTemplate restTemplate;
 
     @Autowired
     ElasticCodeService elasticCodeService;
+
+    @Autowired
+    RedisUtils redisUtils;
 
     private final String CODE_PROCESS_URL = "http://10.129.218.54:5000/api/model";
 
@@ -63,7 +68,7 @@ public class MilvusServiceImpl implements MilvusService {
     public SearchResultDTO search(byte[] arcsoftFeature) {
         milvusClient.loadCollection(LoadCollectionParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).build());
 
-        List<String> requestFiled = Arrays.asList("vector_id", "function_name", "code_info", "vector_info");
+        List<String> requestFiled = Arrays.asList("vector_id", "code_info", "vector_info");
         List<Float> originVector = new LinkedList<>();
         Random random = new Random();
         for (int i = 0; i < 768; i++) {
@@ -116,7 +121,7 @@ public class MilvusServiceImpl implements MilvusService {
 
         milvusClient.loadCollection(LoadCollectionParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).build());
 
-        List<String> requestFiled = Arrays.asList("vector_id", "function_name", "code_info", "vector_info");
+        List<String> requestFiled = Arrays.asList("vector_id", "code_info", "vector_info");
         // List<Float> originVector = new LinkedList<>();
         // Random random = new Random();
         // for (int i = 0; i < 768; i++) {
@@ -124,30 +129,49 @@ public class MilvusServiceImpl implements MilvusService {
         // }
         // List<List<Float>> search_vectors = Collections.singletonList(originVector);
         List<List<Float>> search_vectors = semanticVectorInfo.getVectorInfo();
-        SearchParam searchParam = SearchParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).withConsistencyLevel(ConsistencyLevelEnum.STRONG).withMetricType(MetricType.L2).withOutFields(requestFiled).withTopK(SEARCH_K).withVectors(search_vectors).withVectorFieldName("vector_info").withParams(SEARCH_PARAM).build();
+        SearchParam searchParam = SearchParam.newBuilder().withCollectionName(FUNC_EMBEDING_INDEX).withConsistencyLevel(ConsistencyLevelEnum.STRONG).withMetricType(MetricType.COSINE)
+                .withOutFields(requestFiled)
+                .withTopK(SEARCH_K)
+                .withVectors(search_vectors)
+                .withVectorFieldName("vector_info")
+                .withParams(SEARCH_PARAM).build();
+
         R<SearchResults> respSearch = milvusClient.search(searchParam);
         SearchResultsWrapper wrapper = new SearchResultsWrapper(respSearch.getData().getResults());
         List<SimilarityData> objects = CollectionUtils.newArrayList();
         List<List<Float>> detectVectorResult = new ArrayList<>();
         for (int i = 0; i < search_vectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
+            FieldDataWrapper codeInfo1 = wrapper.getFieldWrapper("code_info");
+            List<String> codeInfo = (List<String>) wrapper.getFieldData("code_info", i);
             List<?> vectorId = wrapper.getFieldData("vector_id", i);
             // List<?> functionNameList = wrapper.getFieldData("function_name", i);
             detectVectorResult = (List<List<Float>>) wrapper.getFieldData("vector_info", i);
             for (int j = 0; j < scores.size(); j++) {
                 SimilarityData similarityData = new SimilarityData();
-                // similarityData.setScore(scores.get(j).getScore());
+                similarityData.setScore(scores.get(j).getScore());
                 similarityData.setScore(Float.valueOf(random.nextInt(100)));
                 // similarityData.setFunctionName((String) functionNameList.get(j));
+                //TODO:    应该在这里拿到esId之后去找Es获取结果
+                JSONObject jsonObject = JSONObject.parseObject(codeInfo.get(j));
+                String esId = jsonObject.getString("es_id");
+//                String esId = "o2o0744BD87LLkglESne";
+                EsCode functionById = elasticCodeService.getFunctionById(esId);
                 similarityData.setVectorId((Long) vectorId.get(j));
-                similarityData.setObs(RandomInfoUtils.getTargetObs());
-                similarityData.setCompileLevel(RandomInfoUtils.getComplieLevel());
-                similarityData.setTargetArch(RandomInfoUtils.getTargetArch());
-                similarityData.setFromFile(RandomInfoUtils.getComesFrom());
-                similarityData.setCodeLine(Long.valueOf(RandomInfoUtils.getRandomCodeLine()));
-                similarityData.setProtectInfo(RandomInfoUtils.getProtectInfo());
-                similarityData.setFaultInfo(RandomInfoUtils.getFault());
-                similarityData.setDangerInfo(RandomInfoUtils.getDanger());
+                similarityData.setObs(functionById.getObsMethod());
+                similarityData.setCompileLevel(functionById.getCompileLevel());
+                similarityData.setTargetArch(functionById.getTargetArch());
+                similarityData.setProtectInfo(functionById.getProtectInfo());
+                similarityData.setFaultInfo(functionById.getDangerious());
+                similarityData.setCodeInfo(functionById.getCode());
+                similarityData.setFunctionName(functionById.getFunctionName());
+//                similarityData.setProtectInfo(functionById.getProtectInfo());
+//                similarityData.setFaultInfo(functionById.getLeakInfo());
+//                similarityData.setDangerInfo(functionById.getDangerious());
+                similarityData.setProtectInfo("");
+                similarityData.setFaultInfo("");
+                similarityData.setDangerInfo("");
+
                 objects.add(similarityData);
             }
         }
@@ -235,9 +259,11 @@ public class MilvusServiceImpl implements MilvusService {
         JSONObject jsonObject = JSONObject.parseObject(targetJson);
         String esId = jsonObject.getString("es_id");
         if (esId == null) {
-            esId = "448099260468305268";
+            esId = "LwQE7Y4BKAvmvPtCuzHg";
         }
+//        TODO: ES查询
         EsCode functionById = elasticCodeService.getFunctionById(esId);
+//        EsCode functionById = new EsCode();
 
         MilvusData milvusData = new MilvusData();
         milvusData.setObs(functionById.getObsMethod());
@@ -247,6 +273,7 @@ public class MilvusServiceImpl implements MilvusService {
         milvusData.setVectorId(functionById.getId());
         milvusData.setFaultInfo(functionById.getDangerious());
         milvusData.setCodeInfo(functionById.getCode());
+        milvusData.setFunctionName(functionById.getFunctionName());
         return milvusData;
     }
 

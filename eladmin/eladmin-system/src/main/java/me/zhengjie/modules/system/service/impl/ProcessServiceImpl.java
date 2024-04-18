@@ -47,15 +47,17 @@ public class ProcessServiceImpl implements ProcessService {
     @Autowired
     RestTemplate restTemplate;
 
-    private final String CODE_PROCESS_URL = "10.129.218.54:5000/api/model";
+    private final String CODE_PROCESS_URL = "http://10.129.218.54:5000/api/model";
 
-    private final String FILE_PARTITION = "10.129.218.54:5000/api/partition";
+    private final String FILE_PARTITION = "http://10.129.218.54:5000/api/partition";
 
     @Override
     public List<SimilarityData> doProcess(String code) {
         // 假设已经有了code
         // 到底是传一个文件好呢，还是传一个code比较方便
         // 直接调用接口就行了吧。
+        Map<String, String> params = new HashMap<>();
+        params.put("path", code);
         SemanticVectorInfo semanticVectorInfo = restTemplate.postForObject(CODE_PROCESS_URL, code, SemanticVectorInfo.class);
         //
         //
@@ -94,28 +96,36 @@ public class ProcessServiceImpl implements ProcessService {
             //     那边生成之后，所有的函数都要写入到ES内部去，每个函数还要走模型吗
             //     这个地方不需要处理函数的名称
             // 获取到所有的函数信息
-            String functionDTOJson = restTemplate.postForObject(FILE_PARTITION, file.getAbsolutePath(), String.class);
             // 应该是String
-            List<FunctionDTO> functionDTOS = JSONObject.parseObject(functionDTOJson, new TypeReference<List<FunctionDTO>>() {
+            Map<String, String> params = new HashMap<>();
+            params.put("path", file.getAbsolutePath());
+            String functionDTOJson = restTemplate.postForObject(FILE_PARTITION, params, String.class);
+            System.out.println(functionDTOJson);
+            List<String> functionDTOS = JSONObject.parseObject(functionDTOJson, new TypeReference<List<String>>() {
             });
-            for (FunctionDTO functionDTO : functionDTOS) {
+            List<FunctionDTO> result = new ArrayList<>();
+            for (String funcName : functionDTOS) {
+                FunctionDTO functionDTO = new FunctionDTO();
                 // 读取文件
                 //
+                File targetFunctionFile = new File(funcName);
+
                 long line = -1;
                 try {
-                    line = Files.lines(Paths.get(file.getAbsolutePath())).count();
+                    line = Files.lines(Paths.get(targetFunctionFile.getAbsolutePath())).count();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                String content = FileUtil.readString(file, Charset.defaultCharset());
-                functionDTO.setFunctionName(file.getName());
+                String content = FileUtil.readString(targetFunctionFile, Charset.defaultCharset());
+                functionDTO.setFunctionName(targetFunctionFile.getName());
                 functionDTO.setCodeInfo(content);
                 functionDTO.setCodeLine(line);
                 functionDTO.setComment("函数本来的注释信息");
                 functionDTO.setCompilable(true);
+                result.add(functionDTO);
             }
 
-            return functionDTOS;
+            return result;
         }
 
         return parseFunctionList("");
@@ -165,6 +175,7 @@ public class ProcessServiceImpl implements ProcessService {
                     FilePathDTO fileC = new FilePathDTO();
                     fileC.setDir(false);
                     fileC.setPathName(file.getName());
+                    fileC.setAbsolutePath(file.getAbsolutePath());
                     children.add(fileC);
                 }
             }
